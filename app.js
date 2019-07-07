@@ -14,8 +14,11 @@ const
 app.set('port', process.env.PORT || 9000);
 app.use(bodyParser.json({ verify: verifyRequestSignature }));
 
+app.get("/", (req,res) => {
+	res.send("hello world")
+})
 	// Connect to Mongodb Database
-    mongoose.connect(configDb.db, {useNewUrlParser: true},function(err){
+    mongoose.connect(configDb.db,{useNewUrlParser: true}, function(err){
         if(err){
             console.log('Connection to Database Failed '+ err);
 
@@ -23,6 +26,25 @@ app.use(bodyParser.json({ verify: verifyRequestSignature }));
              console.log('Connected to the Database '+configDb.db);
         }
     });
+
+app.get("/messages", (req,res) => {
+	User.find().select('messages')
+	.then(data => data ? res.json({message : data}) : res.send("no data yet"))
+	.catch(e => console.log(e))
+})
+
+app.get("/message/view/:mid", (req,res) => {
+	var messageId = req.params.mid;
+	console.log(messageId)
+	// res.send(messageId)
+	// chatList:{$elemMatch:{contactId:req.body.contactId}}
+	User.find({messages: { $all : [messageId] } })
+	.then(data => data.length >=1 ? res.json({message : data}) : res.send("no data found"))
+	.catch(e => console.log(e))
+})
+
+
+
 
 var BIRTH_DATE='';
 var USER_NAME = "";
@@ -197,7 +219,7 @@ function receivedMessage(event) {
 	  				messageTime: new Date()
 				}
 		User.findOneAndUpdate({userId:senderID}, {$push:{messages:messageData}},{$new:true})
-		.then(data => data ? console.log(data): console.log("error occured"))
+		.then(data => data ? console.log("Data Updated Successfully"): console.log("error occured"))
 		.catch(e => console.log(e))
 	}
 
@@ -209,7 +231,7 @@ function receivedMessage(event) {
   				messageText: _message.text,
   				messageTime: new Date()
 		  }]
-		  user.save((err,data) => { err ? console.log(err) : console.log(data)})
+		  user.save((err,data) => { err ? console.log(err) : console.log("Data Saved Successfully")})
 	}
 
   var isEcho = message.is_echo;
