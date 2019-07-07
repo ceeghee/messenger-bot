@@ -3,7 +3,7 @@
 
 
  const UsersSchema = new Schema({
- 	user:{ type:String, unique:true, required:true},
+ 	userId:{ type:String, unique:true, required:true},
  	messages: { type:Array }
  })
 

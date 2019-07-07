@@ -6,12 +6,23 @@ const
   crypto = require('crypto'),
   express = require('express'),
   https = require('https'),
-  request = require('request');
-
+  request = require('request'),
+  mongoose = require('mongoose'),
+  configDb = require('./config/db'),
+   User    = require('./models/users');
   var app = express();
 app.set('port', process.env.PORT || 9000);
-app.set('view engine', 'ejs');
 app.use(bodyParser.json({ verify: verifyRequestSignature }));
+
+	// Connect to Mongodb Database
+    mongoose.connect(configDb.db, {useNewUrlParser: true},function(err){
+        if(err){
+            console.log('Connection to Database Failed '+ err);
+
+        }else{
+             console.log('Connected to the Database '+configDb.db);
+        }
+    });
 
 var BIRTH_DATE='';
 var USER_NAME = "";
@@ -172,6 +183,34 @@ function receivedMessage(event) {
   console.log("Received message for user %d and page %d at %d with message:",
 	senderID, recipientID, timeOfMessage);
   console.log(JSON.stringify(message));
+
+  
+  User.findOne({userId:senderID}).select('userId')
+  .exec((err,data) => {
+  	data ? updateUserData(message) : saveUserData(message)
+  });
+
+	function updateUserData(_message){
+		const messageData = {
+					messageId : _message.mid,
+	  				messageText: _message.text,
+	  				messageTime: new Date()
+				}
+		User.findOneAndUpdate({userId:senderID}, {$push:{messages:messageData}},{$new:true})
+		.then(data => data ? console.log(data): console.log("error occured"))
+		.catch(e => console.log(e))
+	}
+
+	function saveUserData(_message){
+		let user = new User();
+	  	user.userId = senderID;
+	  	user.messages = [{
+  				messageId : _message.mid,
+  				messageText: _message.text,
+  				messageTime: new Date()
+		  }]
+		  user.save((err,data) => { err ? console.log(err) : console.log(data)})
+	}
 
   var isEcho = message.is_echo;
   var messageId = message.mid;
