@@ -16,6 +16,9 @@ app.use(bodyParser.json({ verify: verifyRequestSignature }));
 var BIRTH_DATE='';
 var USER_NAME = "";
 
+const APP_SECRET = (process.env.MESSENGER_APP_SECRET) ?
+  process.env.MESSENGER_APP_SECRET :
+  config.get('appSecret');
 
 // Arbitrary value used to validate a webhook
 const VALIDATION_TOKEN = (process.env.MESSENGER_VALIDATION_TOKEN) ?
@@ -206,6 +209,20 @@ function receivedMessage(event) {
 		 sendHiMessage(senderID);
 		  break;
 
+		  case "yes":
+		  case "yeah":
+		  case "yup":
+		  case "yh":
+		  quickReplyResponse(senderID, messageText);
+		  break;
+
+		  case "no":
+		  case "nah":
+		  case "nay":
+		  case "nada":
+		  quickReplyResponse(senderID, messageText);
+		  break;
+
 		  default:
 			sendBirthDateMessage(senderID, messageText);
 
@@ -350,7 +367,7 @@ function sendBirthDateMessage(recipientId, messageText){
 			 Hello ${messageText}
 			 What is your Birth Date ? 
 
-			 Kindly answer in this format [YYYY-MM-DD, e.g 1997-04-24]
+			 Kindly reply in this format [YYYY-MM-DD, e.g 1997-04-24]
 
 			`
 		  ,
@@ -377,6 +394,8 @@ function quickReplyResponse(recipientId, messageText){
 	  case "no":
 	  case "nah":
 	  case "nay":
+	  case "nop":
+	  case "nope":
 	  sendTextMessage(recipientId, "Goodbye 👋");
 	  break;
 
@@ -388,6 +407,7 @@ function quickReplyResponse(recipientId, messageText){
 }
 
 function sendDaysToBirthDay(recipientId){
+	sendTypingOn(recipientId);
 	let days_to_birthday = calculateDaysToBirthDay(BIRTH_DATE);
 
 	var messageData = {
@@ -415,15 +435,19 @@ function calculateDaysToBirthDay(birthDay){
 
 	 let today=new Date();
 	  let month = 9; //september
-	  // var cmas=new Date(today.getFullYear(), 6, 10);
-	  var cmas=new Date(today.getFullYear(), mo, day);
-	  cmas.setMonth(cmas.getMonth()-1); // month index starts from zero[0]
-	  if (today.getMonth()>cmas.getMonth()) 
+	  var days_to_birthday=new Date(today.getFullYear(), mo, day);
+
+	  days_to_birthday.setMonth(days_to_birthday.getMonth()-1); // month index starts from zero[0]
+	  
+	  if (today.getMonth()>days_to_birthday.getMonth()) 
 	  {
-		  cmas.setFullYear(cmas.getFullYear()+1); 
-	  }  
+		  days_to_birthday.setFullYear(days_to_birthday.getFullYear()+1); 
+	  } 
+	  if(today.getFullYear() < days_to_birthday.getFullYear()){
+
+	  } 
 	  var one_day=1000*60*60*24;
-	  let days = Math.ceil((cmas.getTime()-today.getTime())/(one_day));
+	  let days = Math.ceil((days_to_birthday.getTime()-today.getTime())/(one_day));
 	  
 	  return days;
 }
