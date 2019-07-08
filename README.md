@@ -1,6 +1,6 @@
 # Basic Messenger Bot
 
-Get to know your Number of Days to your Birthday using a 
+Get to know your Number of Days to your Birthday using a messenger bot 
 
 ## Installation
 
