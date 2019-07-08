@@ -18,12 +18,12 @@ app.get("/", (req,res) => {
 	res.send("hello world")
 })
 	// Connect to Mongodb Database
-    mongoose.connect(configDb.db,{useNewUrlParser: true}, function(err){
+    mongoose.connect(configDb.dbProduction,{useNewUrlParser: true}, function(err){
         if(err){
             console.log('Connection to Database Failed '+ err);
 
         }else{
-             console.log('Connected to the Database '+configDb.db);
+             console.log('Connected to the Database '+configDb.dbProduction);
         }
     });
 
