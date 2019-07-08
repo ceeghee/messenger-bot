@@ -35,12 +35,27 @@ app.get("/messages", (req,res) => {
 
 app.get("/message/view/:mid", (req,res) => {
 	var messageId = req.params.mid;
-	console.log(messageId)
+	// console.log(messageId)
 	// res.send(messageId)
-	// chatList:{$elemMatch:{contactId:req.body.contactId}}
-	User.find({messages: { $all : [messageId] } })
-	.then(data => data.length >=1 ? res.json({message : data}) : res.send("no data found"))
+
+	let user = new User()
+	
+	User.find({"messages":{messageId:messageId}})
+	.then(data => res.send(data))
 	.catch(e => console.log(e))
+
+})
+
+
+//change to app.patch when testing with a REST CLIENT like insomnia or postman
+app.get("/message/delete/:mid", (req,res) => {
+	let mid = req.params.mid;
+
+	User.updateOne({$pull: {messages: { messageId: mid}}})
+	.then(data => data.nModified >=1 ? res.send("message deleteed successfully")
+		: res.send("message was unable to be deleted"))
+	.catch(e => console.log(e))
+
 })
 
 
